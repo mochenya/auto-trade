@@ -2,7 +2,7 @@ name: Trade Night Auto Run
 
 on:
   schedule:
-    - cron: '10 11 * * *'
+    - cron: '50 11 * * *'
   workflow_dispatch:
 
 jobs:

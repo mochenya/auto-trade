@@ -2,7 +2,7 @@ name: Trade Afternoon Auto Run
 
 on:
   schedule:
-    - cron: '10 5 * * *'
+    - cron: '50 5 * * *'
   workflow_dispatch:
 
 jobs:
