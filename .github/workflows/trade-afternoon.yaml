@@ -30,7 +30,7 @@ jobs:
           cat > .env << EOF
           ${{ secrets.TRADE_ENV }}
           EOF
-          cat "SCHEDULE_TIME=14:30" >> ".env"
+          echo "SCHEDULE_TIME=14:30" >> ".env"
 
       - name: Run trade.py
         run: uv run trade.py
