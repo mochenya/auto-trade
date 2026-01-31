@@ -145,23 +145,31 @@ def generate_followed_banner(
     share_id: str,
     available: float,
     quantity: float,
+    login_ip: str = None,
+    organization: str = None,
+    country: str = None,
 ) -> str:
     """
     生成跟单成功的 Banner
-    
+
     Args:
         create_time: 订单创建时间（毫秒时间戳）
         follow_time: 跟单时间
         share_id: 交易分享 ID
         available: 可用金额
         quantity: 跟单金额
-    
+        login_ip: 登录IP地址
+        organization: ISP/组织信息
+        country: 国家信息
+
     Returns:
         str: 格式化的 Banner 文本
     """
     create_dt = datetime.fromtimestamp(create_time / 1000, tz=CHINA_TZ).strftime('%Y-%m-%d %H:%M:%S')
     follow_dt = follow_time.astimezone(CHINA_TZ).strftime('%Y-%m-%d %H:%M:%S')
-    
+
+    location = f"{organization} ({country})" if organization and country else "未知"
+
     banner = f"""
 ✨ 跟单成功 ✨
 
@@ -173,6 +181,10 @@ def generate_followed_banner(
 💰 资金信息
   💎 可用金额: {available:.2f} USDT
   📊 跟单金额: {quantity:.2f} USDT
+
+🌐 登录信息
+  📍 IP地址: {login_ip or '未知'}
+  🏢 位置: {location}
 """
     return banner
 
@@ -186,8 +198,9 @@ def watch_and_follow(email: str = None, password: str = None, max_trades: int = 
         password: 登录密码（可选，默认从环境变量读取）
         max_trades: 最多跟单数量，默认 1
     """
-    from user import post_login
+    from user import post_login, fetch_get_info
     from funds import funds_overview, parse_balance
+    from utils import parse_ip_address
 
     # 如果未传入，使用配置中的默认值
     if email is None:
@@ -202,6 +215,23 @@ def watch_and_follow(email: str = None, password: str = None, max_trades: int = 
     token = post_login(email=email, password=password)
     print(f"登录成功: {token}")
     
+    # 获取登录IP并解析
+    login_ip = None
+    organization = None
+    country = None
+
+    user_info = fetch_get_info()
+    if user_info and (info_data := user_info.get("data")):
+        login_ip = info_data.get("loginIp")
+        if login_ip:
+            ip_info = parse_ip_address(login_ip)
+            organization = ip_info.get("organization")
+            country = ip_info.get("country")
+
+    # 打印登录信息
+    print(f"登录IP: {login_ip or '未知'}")
+    print(f"位置: {organization or '未知'} ({country or '未知'})")
+
     # 获取钱包余额并计算跟单数量
     funds_data = funds_overview()
     balance = parse_balance(funds_data)
@@ -270,6 +300,9 @@ def watch_and_follow(email: str = None, password: str = None, max_trades: int = 
                             share_id=trade['id'],
                             available=available,
                             quantity=quantity,
+                            login_ip=login_ip,
+                            organization=organization,
+                            country=country,
                         )
                         print(banner)
                         
@@ -308,7 +341,7 @@ if __name__ == "__main__":
     from utils import wait_until_scheduled
 
     # 等待到指定时间
-    wait_until_scheduled(config.SCHEDULE_TIME, config.ADVANCE_MINUTES)
+    # wait_until_scheduled(config.SCHEDULE_TIME, config.ADVANCE_MINUTES)
 
     # 执行跟单
     watch_and_follow()
