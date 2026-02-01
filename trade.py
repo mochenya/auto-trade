@@ -341,7 +341,7 @@ if __name__ == "__main__":
     from utils import wait_until_scheduled
 
     # 等待到指定时间
-    # wait_until_scheduled(config.SCHEDULE_TIME, config.ADVANCE_MINUTES)
+    wait_until_scheduled(config.SCHEDULE_TIME, config.ADVANCE_MINUTES)
 
     # 执行跟单
     watch_and_follow()
