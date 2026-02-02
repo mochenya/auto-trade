@@ -26,9 +26,11 @@ def wait_until_scheduled(schedule_time: str, advance_minutes: int) -> None:
     target = now.replace(hour=target_hour, minute=target_minute, second=0, microsecond=0)
     target = target - timedelta(minutes=advance_minutes)
 
-    # 如果已经过了今天的启动时间，则等到明天
+    # 如果已经过了今天的启动时间，直接开始执行不等待
     if now >= target:
-        target = target + timedelta(days=1)
+        print(f"当前时间: {now.strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"目标时间 {schedule_time} (提前{advance_minutes}分钟) 已过，立即开始执行...")
+        return
 
     # 添加1~10秒的随机抖动，更像人类行为
     jitter = secrets.SystemRandom().uniform(1, 10)
